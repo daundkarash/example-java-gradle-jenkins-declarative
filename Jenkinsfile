@@ -11,24 +11,24 @@ pipeline {
       }
     } // Build
 
-    stage('Publish') {
-      steps {
-        withCredentials([usernamePassword(
-        credentialsId: 'github-publish-maven', 
-        passwordVariable: 'MVN_PASSWORD', 
-        usernameVariable: 'MVN_USERNAME')]) {
+    // stage('Publish') {
+    //   steps {
+    //     withCredentials([usernamePassword(
+    //     credentialsId: 'github-publish-maven', 
+    //     passwordVariable: 'MVN_PASSWORD', 
+    //     usernameVariable: 'MVN_USERNAME')]) {
 
-          withGradle {
-            sh """
-              ./gradlew -i --stacktrace publish \
-                  -PMVN_USERNAME=${MVN_USERNAME} \
-                  -PMVN_PASSWORD=${MVN_PASSWORD} \
-                  -PMVN_VERSION=1.${BUILD_NUMBER}
-            """
-          }  
-        }
-      }
-    } // Publish
+    //       withGradle {
+    //         sh """
+    //           ./gradlew -i --stacktrace publish \
+    //               -PMVN_USERNAME=${MVN_USERNAME} \
+    //               -PMVN_PASSWORD=${MVN_PASSWORD} \
+    //               -PMVN_VERSION=1.${BUILD_NUMBER}
+    //         """
+    //       }  
+    //     }
+    //   }
+    // } // Publish
 
     stage('Post') {
       steps {
