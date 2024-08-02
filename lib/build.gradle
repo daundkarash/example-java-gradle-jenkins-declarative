@@ -67,29 +67,29 @@ pmd {
     maxFailures = 4
 }
 
-// MAVEN !
-publish {
-    dependsOn build
-}
+// // MAVEN !
+// publish {
+//     dependsOn build
+// }
 
-publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/jvalentino/example-java-gradle-jenkins-declarative")
-            credentials {
-                username = project.getProperties().get("MVN_USERNAME")
-                password = project.getProperties().get("MVN_PASSWORD")
-            }
-        }
-    }
-    publications {
-        gpr(MavenPublication) {
-            groupId = 'example.java.gradle'
-            artifactId = 'example-java-gradle-lib'
-            version = project.getProperties().get("MVN_VERSION")
+// publishing {
+//     repositories {
+//         maven {
+//             name = "GitHubPackages"
+//             url = uri("https://maven.pkg.github.com/jvalentino/example-java-gradle-jenkins-declarative")
+//             credentials {
+//                 username = project.getProperties().get("MVN_USERNAME")
+//                 password = project.getProperties().get("MVN_PASSWORD")
+//             }
+//         }
+//     }
+//     publications {
+//         gpr(MavenPublication) {
+//             groupId = 'example.java.gradle'
+//             artifactId = 'example-java-gradle-lib'
+//             version = project.getProperties().get("MVN_VERSION")
 
-            from components.java
-        }
-    }
-}
+//             from components.java
+//         }
+//     }
+// }
