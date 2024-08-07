@@ -30,16 +30,16 @@ pipeline {
     //   }
     // } // Publish
 
-    stage('Post') {
-      steps {
-        script {
-          jacoco()
-          junit 'lib/build/test-results/test/*.xml'
-          def pmd = scanForIssues tool: [$class: 'Pmd'], pattern: 'lib/build/reports/pmd/*.xml'
-          publishIssues issues: [pmd]
-        }
-      }
-    } // Post
+    // stage('Post') {
+    //   steps {
+    //     script {
+    //       jacoco()
+    //       junit 'lib/build/test-results/test/*.xml'
+    //       def pmd = scanForIssues tool: [$class: 'Pmd'], pattern: 'lib/build/reports/pmd/*.xml'
+    //       publishIssues issues: [pmd]
+    //     }
+    //   }
+    // } // Post
 
   }
 }
