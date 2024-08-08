@@ -1,11 +1,11 @@
 pipeline {
   agent any
 
-  environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials-id') // Define DockerHub credentials
-        IMAGE_NAME = 'rahulvivaops/java-gradle-project-demo'
-        IMAGE_TAG = 'latest'
-  }
+  // environment {
+  //       DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials-id') // Define DockerHub credentials
+  //       IMAGE_NAME = 'rahulvivaops/java-gradle-project-demo'
+  //       IMAGE_TAG = 'latest'
+  // }
 
   stages {
     
@@ -17,16 +17,16 @@ pipeline {
       }
     } // Build
 
-    stage('Dockerize') {
-          steps {
-              script {
-                  docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials-id') {
-                      def app = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
-                      app.push()
-                  }
-              }
-          }
-    }
+    // stage('Dockerize') {
+    //       steps {
+    //           script {
+    //               docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials-id') {
+    //                   def app = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
+    //                   app.push()
+    //               }
+    //           }
+    //       }
+    // }
 
     // stage('Publish') {
     //   steps {
