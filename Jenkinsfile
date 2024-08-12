@@ -6,11 +6,6 @@ pipeline {
             kind: Pod
             spec:
               containers:
-              - name: gradle
-                image: gradle:7.5-jdk17
-                command:
-                - cat
-                tty: true
               - name: docker
                 image: docker:20.10.8-dind
                 securityContext:
@@ -44,7 +39,8 @@ pipeline {
 
         stage('Build') {
             steps {
-                container('gradle') {
+                // Run the Gradle build command in the Docker container
+                container('docker') {
                     sh './gradlew clean build --stacktrace -i'
                 }
             }
@@ -52,6 +48,7 @@ pipeline {
 
         stage('Docker Build') {
             steps {
+                // Build the Docker image
                 container('docker') {
                     sh 'docker build -t java-application:latest .'
                 }
@@ -83,15 +80,13 @@ pipeline {
                     passwordVariable: 'MVN_PASSWORD', 
                     usernameVariable: 'MVN_USERNAME')]) {
 
-                    withGradle {
-                        sh """
-                            ./gradlew -i --stacktrace publish \
-                                -PMVN_USERNAME=${MVN_USERNAME} \
-                                -PMVN_PASSWORD=${MVN_PASSWORD} \
-                                -PMVN_VERSION=1.${BUILD_NUMBER}
-                        """
-                    }  
-                }
+                    sh """
+                        ./gradlew -i --stacktrace publish \
+                            -PMVN_USERNAME=${MVN_USERNAME} \
+                            -PMVN_PASSWORD=${MVN_PASSWORD} \
+                            -PMVN_VERSION=1.${BUILD_NUMBER}
+                    """
+                }  
             }
         } // Publish
         */
@@ -100,13 +95,11 @@ pipeline {
         /*
         stage('Post') {
             steps {
-                container('gradle') {
-                    script {
-                        jacoco()
-                        junit 'lib/build/test-results/test/*.xml'
-                        def pmd = scanForIssues tool: [$class: 'Pmd'], pattern: 'lib/build/reports/pmd/*.xml'
-                        publishIssues issues: [pmd]
-                    }
+                script {
+                    jacoco()
+                    junit 'lib/build/test-results/test/*.xml'
+                    def pmd = scanForIssues tool: [$class: 'Pmd'], pattern: 'lib/build/reports/pmd/*.xml'
+                    publishIssues issues: [pmd]
                 }
             }
         } // Post
