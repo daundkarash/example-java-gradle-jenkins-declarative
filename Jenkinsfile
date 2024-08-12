@@ -15,19 +15,25 @@ pipeline {
            sh './gradlew clean build --stacktrace -i'
         }
       }
-    } // Build
-
-    stage('Dockerize') {
-          steps {
-              script {
-                sh ' docker build -t my-java-app:latest .'
-                  // docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials-id') {
-                      // def app = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
-                      // app.push()
-                  // }
-              }
-          }
-    }
+    } 
+  }// Build
+  stage('Docker Build') {
+                sh '''
+                docker --version
+                docker build -t my-java-app:latest .
+                '''
+            }
+    // stage('Dockerize') {
+    //       steps {
+    //           script {
+    //             sh ' docker build -t my-java-app:latest .'
+    //               // docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials-id') {
+    //                   // def app = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
+    //                   // app.push()
+    //               // }
+    //           }
+    //       }
+    // }
 
     // stage('Publish') {
     //   steps {
@@ -59,5 +65,5 @@ pipeline {
     //   }
     // } // Post
 
-  }
+  // }
 }
