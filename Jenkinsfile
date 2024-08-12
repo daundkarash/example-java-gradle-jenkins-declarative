@@ -1,16 +1,50 @@
 pipeline {
-    agent any
-
-    // environment {
-    //     DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials-id') // Define DockerHub credentials
-    //     IMAGE_NAME = 'rahulvivaops/java-gradle-project-demo'
-    //     IMAGE_TAG = 'latest'
-    // }
+    agent {
+        kubernetes {
+            yaml """
+            apiVersion: v1
+            kind: Pod
+            spec:
+              containers:
+              - name: gradle
+                image: gradle:7.5-jdk17
+                command:
+                - cat
+                tty: true
+              - name: docker
+                image: docker:20.10.8-dind
+                securityContext:
+                  privileged: true
+                command:
+                - dockerd-entrypoint.sh
+                args:
+                - --host=tcp://0.0.0.0:2375
+                - --host=unix:///var/run/docker.sock
+                env:
+                - name: DOCKER_TLS_CERTDIR
+                  value: ""
+                volumeMounts:
+                - name: docker-graph-storage
+                  mountPath: /var/lib/docker
+              volumes:
+              - name: docker-graph-storage
+                emptyDir: {}
+            """
+        }
+    }
 
     stages {
+        stage('Check Docker') {
+            steps {
+                container('docker') {
+                    sh 'docker --version'
+                }
+            }
+        } // Check Docker
+
         stage('Build') {
             steps {
-                withGradle {
+                container('gradle') {
                     sh './gradlew clean build --stacktrace -i'
                 }
             }
@@ -18,49 +52,64 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh 'docker build -t java-application:latest .'
+                container('docker') {
+                    sh 'docker build -t java-application:latest .'
+                }
             }
         } // Docker Build
 
-        // stage('Dockerize') {
-        //     steps {
-        //         script {
-        //             docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials-id') {
-        //                 def app = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
-        //                 app.push()
-        //             }
-        //         }
-        //     }
-        // } // Dockerize
+        // Uncomment and use the following stage if you want to push the image to Docker Hub
+        /*
+        stage('Dockerize') {
+            steps {
+                container('docker') {
+                    script {
+                        docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials-id') {
+                            def app = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
+                            app.push()
+                        }
+                    }
+                }
+            }
+        } // Dockerize
+        */
 
-        // stage('Publish') {
-        //     steps {
-        //         withCredentials([usernamePassword(
-        //             credentialsId: 'github-publish-maven', 
-        //             passwordVariable: 'MVN_PASSWORD', 
-        //             usernameVariable: 'MVN_USERNAME')]) {
+        // Uncomment and use the following stage if you want to publish the built JAR to a Maven repository
+        /*
+        stage('Publish') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'github-publish-maven', 
+                    passwordVariable: 'MVN_PASSWORD', 
+                    usernameVariable: 'MVN_USERNAME')]) {
 
-        //             withGradle {
-        //                 sh """
-        //                     ./gradlew -i --stacktrace publish \
-        //                         -PMVN_USERNAME=${MVN_USERNAME} \
-        //                         -PMVN_PASSWORD=${MVN_PASSWORD} \
-        //                         -PMVN_VERSION=1.${BUILD_NUMBER}
-        //                 """
-        //             }  
-        //         }
-        //     }
-        // } // Publish
+                    withGradle {
+                        sh """
+                            ./gradlew -i --stacktrace publish \
+                                -PMVN_USERNAME=${MVN_USERNAME} \
+                                -PMVN_PASSWORD=${MVN_PASSWORD} \
+                                -PMVN_VERSION=1.${BUILD_NUMBER}
+                        """
+                    }  
+                }
+            }
+        } // Publish
+        */
 
-        // stage('Post') {
-        //     steps {
-        //         script {
-        //             jacoco()
-        //             junit 'lib/build/test-results/test/*.xml'
-        //             def pmd = scanForIssues tool: [$class: 'Pmd'], pattern: 'lib/build/reports/pmd/*.xml'
-        //             publishIssues issues: [pmd]
-        //         }
-        //     }
-        // } // Post
+        // Uncomment and use the following stage for post-build actions like running tests and reporting
+        /*
+        stage('Post') {
+            steps {
+                container('gradle') {
+                    script {
+                        jacoco()
+                        junit 'lib/build/test-results/test/*.xml'
+                        def pmd = scanForIssues tool: [$class: 'Pmd'], pattern: 'lib/build/reports/pmd/*.xml'
+                        publishIssues issues: [pmd]
+                    }
+                }
+            }
+        } // Post
+        */
     }
 }
