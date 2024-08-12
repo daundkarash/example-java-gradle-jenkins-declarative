@@ -18,10 +18,7 @@ pipeline {
     
   }// Build
   stage('Docker Build') {
-                sh '''
-                docker --version
-                docker build -t my-java-app:latest .
-                '''
+                sh ' docker build -t my-java-app:latest '
             }
     // stage('Dockerize') {
     //       steps {
