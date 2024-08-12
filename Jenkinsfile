@@ -24,7 +24,7 @@ pipeline {
                   // docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials-id') {
                       // def app = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
                       // app.push()
-                  }
+                  // }
               }
           }
     }
