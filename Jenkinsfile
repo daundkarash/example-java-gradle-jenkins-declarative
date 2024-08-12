@@ -20,7 +20,7 @@ pipeline {
     stage('Dockerize') {
           steps {
               script {
-                docker build -t my-java-app:latest .
+                sh ' docker build -t my-java-app:latest .'
                   // docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials-id') {
                       // def app = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
                       // app.push()
