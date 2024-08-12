@@ -15,7 +15,7 @@ pipeline {
            sh './gradlew clean build --stacktrace -i'
         }
       }
-    } 
+    
   }// Build
   stage('Docker Build') {
                 sh '''
@@ -65,5 +65,5 @@ pipeline {
     //   }
     // } // Post
 
-  // }
+  }
 }
