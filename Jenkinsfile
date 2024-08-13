@@ -40,9 +40,7 @@ pipeline {
         stage('Build') {
             steps {
                 // Run the Gradle build command in the Docker container
-                container('docker') {
                     sh './gradlew clean build --stacktrace -i'
-                }
             }
         } // Build
 
