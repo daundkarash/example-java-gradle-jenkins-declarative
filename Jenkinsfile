@@ -53,6 +53,19 @@ pipeline {
             }
         } // Docker Build
 
+         stage('Push image to Hub'){
+            steps{
+				container('docker') {
+					script{
+					   withCredentials([string(credentialsId: 'dockerhub-pwd', variable: 'dockerhubpwd')]) {
+					   sh 'docker login -u daundkarash -p ${dockerhubpwd}'
+
+	}
+					   sh 'docker push java-application:latest'
+					}
+				}
+            }
+        }
         // Uncomment and use the following stage if you want to push the image to Docker Hub
         /*
         stage('Dockerize') {
