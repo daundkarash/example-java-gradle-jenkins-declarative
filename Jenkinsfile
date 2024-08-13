@@ -61,7 +61,7 @@ pipeline {
 					   sh 'docker login -u daundkarash -p ${dockerhubpwd}'
 
 	}
-					   sh 'docker push java-application:latest'
+					   sh 'docker push daundkarash/java-application:latest'
 					}
 				}
             }
