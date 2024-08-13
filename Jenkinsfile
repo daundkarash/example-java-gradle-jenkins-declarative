@@ -48,7 +48,7 @@ pipeline {
             steps {
                 // Build the Docker image
                 container('docker') {
-                    sh 'docker build -t java-application:latest .'
+                    sh 'docker build -t daundkarash/java-application .'
                 }
             }
         } // Docker Build
@@ -61,7 +61,7 @@ pipeline {
 					   sh 'docker login -u daundkarash -p ${dockerhubpwd}'
 
 	}
-					   sh 'docker push daundkarash/java-application:latest'
+					   sh 'docker push daundkarash/java-application'
 					}
 				}
             }
