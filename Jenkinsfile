@@ -29,17 +29,12 @@ podTemplate(
             }
         }
 
-         stage('Build') {
-            steps {
+        stage('Build') {
+            container('podman') {
                 // Run the Gradle build command in the Podman container
                 sh './gradlew clean build --stacktrace -i'
             }
-         } // Build
-
-        // stage('Build') {
-        //         // Run the Gradle build command
-        //         sh './gradlew clean build --stacktrace -i'
-        // }
+        }
 
         stage('Podman Build') {
             container('podman') {
