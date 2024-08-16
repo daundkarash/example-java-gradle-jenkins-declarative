@@ -58,10 +58,10 @@ pipeline {
                             sh 'podman login registry.gitlab.com -u ${GITLAB_USER} -p ${GITLAB_TOKEN}'
                             
                             // Tag the image for GitLab Container Registry
-                            sh 'podman tag daundkarash/java-application registry.gitlab.com/jenkins_cicd/jenkins-image-push/java-application:latest'
+                            sh 'podman tag daundkarash/java-application registry.gitlab.com/test8011231/jenkins-image-push/java-application:latest'
                             
                             // Push the image to GitLab Container Registry
-                            sh 'podman push registry.gitlab.com/jenkins_cicd/jenkins-image-push/java-application:latest'
+                            sh 'podman push registry.gitlab.com/test8011231/jenkins-image-push/java-application:latest'
                         }
                     }
                 }
