@@ -33,21 +33,21 @@ pipeline {
             }
         } // Check Podman
 
-        // stage('Build') {
-        //     steps {
-        //         // Run the Gradle build command in the Podman container
-        //         sh './gradlew clean build --stacktrace -i'
-        //     }
-        // } // Build
+        stage('Build') {
+            steps {
+                // Run the Gradle build command in the Podman container
+                sh './gradlew clean build --stacktrace -i'
+            }
+         } // Build
 
-        // stage('Podman Build') {
-        //     steps {
-        //         // Build the container image using Podman
-        //         container('podman') {
-        //             sh 'podman build -t daundkarash/java-application .'
-        //         }
-        //     }
-        // } // Podman Build
+        stage('Podman Build') {
+            steps {
+                // Build the container image using Podman
+                container('podman') {
+                    sh 'podman build -t daundkarash/java-application .'
+                }
+            }
+         } // Podman Build
         
         // stage('Push image to Hub') {
         //     steps {
@@ -60,6 +60,6 @@ pipeline {
         //             }
         //         }
         //     }
-        // } // Push image to Hub
+        //  } // Push image to Hub
     }
 }
