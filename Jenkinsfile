@@ -1,71 +1,62 @@
-pipeline {
-    agent {
-        kubernetes {
-            yaml """
-            apiVersion: v1
-            kind: Pod
-            spec:
-              containers:
-              - name: podman
-                image: quay.io/podman/stable:latest
-                securityContext:
-                  privileged: true
-                command:
-                - sleep
-                args:
-                - infinity
-                volumeMounts:
-                - name: podman-graph-storage
-                  mountPath: /var/lib/containers
-              volumes:
-              - name: podman-graph-storage
-                emptyDir: {}
-            """
-        }
-    }
+// Define the container list outside of the podTemplate block
+containerList = [
+    containerTemplate(
+        name: 'podman',
+        image: 'quay.io/podman/stable:latest',
+        command: 'sleep',
+        args: 'infinity',
+        securityContext: [privileged: true],
+        volumeMounts: [
+            mountPath: '/var/lib/containers',
+            name: 'podman-graph-storage'
+        ]
+    )
+]
 
-    stages {
+podTemplate(
+    cloud: 'kubernetes-1',
+    namespace: 'jenkins',
+    containers: containerList,
+    volumes: [
+        emptyDirVolume(mountPath: '/var/lib/containers', name: 'podman-graph-storage')
+    ],
+    podRetention: never(),
+    showRawYaml: true
+) {
+    node(POD_LABEL) {
         stage('Check Podman') {
-            steps {
-                container('podman') {
-                    sh 'podman --version'
-                }
+            container('podman') {
+                sh 'podman --version'
             }
-        } // Check Podman
+        }
 
         stage('Build') {
-            steps {
-                // Run the Gradle build command in the Podman container
+                // Run the Gradle build command
                 sh './gradlew clean build --stacktrace -i'
-            }
-         } // Build
+        }
 
         stage('Podman Build') {
-            steps {
+            container('podman') {
                 // Build the container image using Podman
-                container('podman') {
-                    sh 'podman build -t daundkarash/java-application .'
-                }
+                sh 'podman build -t daundkarash/java-application_second .'
             }
-         } // Podman Build
-        
+        }
+
         stage('Push image to GitLab') {
-            steps {
-                container('podman') {
-                    script {
-                        withCredentials([usernamePassword(credentialsId: 'gitlab-registry', usernameVariable: 'GITLAB_USER', passwordVariable: 'GITLAB_TOKEN')]) {
-                            // Log in to GitLab Container Registry
-                            sh 'podman login registry.gitlab.com -u ${GITLAB_USER} -p ${GITLAB_TOKEN}'
-                            
-                            // Tag the image for GitLab Container Registry
-                            sh 'podman tag daundkarash/java-application registry.gitlab.com/test8011231/jenkins-image-push/java-application:latest'
-                            
-                            // Push the image to GitLab Container Registry
-                            sh 'podman push registry.gitlab.com/test8011231/jenkins-image-push/java-application:latest'
-                        }
+            container('podman') {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'gitlab-registry', usernameVariable: 'GITLAB_USER', passwordVariable: 'GITLAB_TOKEN')]) {
+                        // Log in to GitLab Container Registry
+                        sh 'podman login registry.gitlab.com -u ${GITLAB_USER} -p ${GITLAB_TOKEN}'
+                        
+                        // Tag the image for GitLab Container Registry
+                        sh 'podman tag daundkarash/java-application_second registry.gitlab.com/test8011231/jenkins-image-push/java-application_second:latest'
+                        
+                        // Push the image to GitLab Container Registry
+                        sh 'podman push registry.gitlab.com/test8011231/jenkins-image-push/java-application_second:latest'
                     }
                 }
             }
-         } // Push image to GitLab
+        }
     }
 }
