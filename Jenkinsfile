@@ -49,17 +49,23 @@ pipeline {
             }
          } // Podman Build
         
-        // stage('Push image to Hub') {
-        //     steps {
-        //         container('podman') {
-        //             script {
-        //                 withCredentials([string(credentialsId: 'dockerhub-pwd', variable: 'podmanpwd')]) {
-        //                     sh 'podman login -u daundkarash -p ${podmanpwd}'
-        //                 }
-        //                 sh 'podman push daundkarash/java-application'
-        //             }
-        //         }
-        //     }
-        //  } // Push image to Hub
+        stage('Push image to GitLab') {
+            steps {
+                container('podman') {
+                    script {
+                        withCredentials([usernamePassword(credentialsId: 'gitlab-registry', usernameVariable: 'GITLAB_USER', passwordVariable: 'GITLAB_TOKEN')]) {
+                            // Log in to GitLab Container Registry
+                            sh 'podman login registry.gitlab.com -u ${GITLAB_USER} -p ${GITLAB_TOKEN}'
+                            
+                            // Tag the image for GitLab Container Registry
+                            sh 'podman tag daundkarash/java-application registry.gitlab.com/jenkins_CICD/jenkins-image-push/java-application:latest'
+                            
+                            // Push the image to GitLab Container Registry
+                            sh 'podman push registry.gitlab.com/jenkins_CICD/jenkins-image-push/java-application:latest'
+                        }
+                    }
+                }
+            }
+         } // Push image to GitLab
     }
 }
