@@ -15,7 +15,6 @@ containerList = [
 
 podTemplate(
     cloud: 'kubernetes-1',
-    namespace: 'jenkins',
     containers: containerList,
     volumes: [
         emptyDirVolume(mountPath: '/var/lib/containers', name: 'podman-graph-storage')
