@@ -59,7 +59,7 @@ pipeline {
             steps {
                 sh 'chmod +x ./gradlew'
                 sh './gradlew clean build --info'
-                // sh 'ls -R build/'
+                sh 'ls -R lib/build/libs'
             }
         }
 
