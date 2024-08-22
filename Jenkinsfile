@@ -6,114 +6,86 @@ pipeline {
             kind: Pod
             spec:
               containers:
-              - name: docker
-                image: docker:20.10.8-dind
+              - name: podman
+                image: quay.io/podman/stable:latest
                 securityContext:
                   privileged: true
                 command:
-                - dockerd-entrypoint.sh
+                - sleep
                 args:
-                - --host=tcp://0.0.0.0:2375
-                - --host=unix:///var/run/docker.sock
-                env:
-                - name: DOCKER_TLS_CERTDIR
-                  value: ""
+                - infinity
                 volumeMounts:
-                - name: docker-graph-storage
-                  mountPath: /var/lib/docker
+                - name: podman-graph-storage
+                  mountPath: /var/lib/containers
+              - name: snyk
+                image: snyk/snyk-cli:python-3.6
+                command:
+                - sleep
+                args:
+                - infinity
+                env:
+                - name: HTTP_PROXY
+                  value: "http://23.38.59.137:443"
+                - name: HTTPS_PROXY
+                  value: "http://23.38.59.137:443"
+                - name: NO_PROXY
+                  value: "localhost,127.0.0.1"
+                volumeMounts:
+                - name: podman-graph-storage
+                  mountPath: /var/lib/containers
+              
               volumes:
-              - name: docker-graph-storage
+              - name: podman-graph-storage
                 emptyDir: {}
             """
         }
     }
-
+    environment {
+        SNYK_TOKEN = credentials('snyk-api-token')  // Reference the Jenkins secret
+    }
     stages {
-        stage('Check Docker') {
+        stage('Check Podman') {
             steps {
-                container('docker') {
-                    sh 'docker --version'
+                container('podman') {
+                    sh 'podman --version'
                 }
-            }
-        } // Check Docker
-
-        stage('Build') {
-            steps {
-                // Run the Gradle build command in the Docker container
-                    sh './gradlew clean build --stacktrace -i'
-            }
-        } // Build
-
-        stage('Docker Build') {
-            steps {
-                // Build the Docker image
-                container('docker') {
-                    sh 'docker build -t daundkarash/java-application .'
-                }
-            }
-        } // Docker Build
-
-         stage('Push image to Hub'){
-            steps{
-				container('docker') {
-					script{
-					   withCredentials([string(credentialsId: 'dockerhub-pwd', variable: 'dockerhubpwd')]) {
-					   sh 'docker login -u daundkarash -p ${dockerhubpwd}'
-
-	}
-					   sh 'docker push daundkarash/java-application'
-					}
-				}
             }
         }
-        // Uncomment and use the following stage if you want to push the image to Docker Hub
-        /*
-        stage('Dockerize') {
+        stage('Build') {
             steps {
-                container('docker') {
-                    script {
-                        docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials-id') {
-                            def app = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
-                            app.push()
-                        }
-                    }
+                sh 'chmod +x ./gradlew'
+                sh './gradlew clean build'
+                sh 'ls -l build/libs/'
+            }
+        }
+        stage('Podman Build') {
+            steps {
+                container('podman') {
+                    sh 'podman build -t daundkarash/java-application_snyk_old_local .'
+                    sh 'podman save -o /var/lib/containers/java-application_snyk_old_local.tar daundkarash/java-application_snyk_old_local'
                 }
             }
-        } // Dockerize
-        */
-
-        // Uncomment and use the following stage if you want to publish the built JAR to a Maven repository
-        /*
-        stage('Publish') {
+        }
+        stage('Load Image') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'github-publish-maven', 
-                    passwordVariable: 'MVN_PASSWORD', 
-                    usernameVariable: 'MVN_USERNAME')]) {
-
-                    sh """
-                        ./gradlew -i --stacktrace publish \
-                            -PMVN_USERNAME=${MVN_USERNAME} \
-                            -PMVN_PASSWORD=${MVN_PASSWORD} \
-                            -PMVN_VERSION=1.${BUILD_NUMBER}
-                    """
-                }  
+                container('podman') {
+                    sh 'podman load -i /var/lib/containers/java-application_snyk_old_local.tar'
+                 }
             }
-        } // Publish
-        */
-
-        // Uncomment and use the following stage for post-build actions like running tests and reporting
-        /*
-        stage('Post') {
+        }
+        stage('Verify Image') {
             steps {
-                script {
-                    jacoco()
-                    junit 'lib/build/test-results/test/*.xml'
-                    def pmd = scanForIssues tool: [$class: 'Pmd'], pattern: 'lib/build/reports/pmd/*.xml'
-                    publishIssues issues: [pmd]
+                container('podman') {
+                    sh 'podman images | grep daundkarash/java-application_snyk_old_local'
+                    sh 'podman inspect localhost/daundkarash/java-application_snyk_old_local:latest'
                 }
             }
-        } // Post
-        */
-    }
-}
+        }
+        stage('Snyk Container Scan') {
+            steps {
+                container('snyk') {
+                    sh 'snyk auth $SNYK_TOKEN'  // Authenticate with Snyk
+                    sh 'snyk container test /var/lib/containers/java-application_snyk_old_local.tar --debug'  // Scan using image tag
+                }
+            }
+        }
