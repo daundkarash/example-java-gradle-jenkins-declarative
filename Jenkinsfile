@@ -84,7 +84,7 @@ pipeline {
             steps {
                 container('podman') {
                     sh 'podman images | grep daundkarash/java-application_old_local'
-                    sh 'podman inspect localhost/daundkarash/java-application_old_local:latest'
+                    // sh 'podman inspect localhost/daundkarash/java-application_old_local:latest'
                     sh 'ls -l /var/lib/containers/'
                 }
             }
@@ -102,6 +102,8 @@ pipeline {
         stage('Snyk Container Scan') {
             steps {
                 container('snyk') {
+                    sh 'whoami'
+                    sh 'id'
                     sh 'snyk auth $SNYK_TOKEN -d'  // Authenticate with Snyk
                     sh 'snyk container test /var/lib/containers/java-application_old_local.tar --debug'  // Scan using image tag
                 }
