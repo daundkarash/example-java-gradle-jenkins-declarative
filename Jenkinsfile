@@ -24,13 +24,13 @@ pipeline {
                 - sleep
                 args:
                 - infinity
-                // env:
-                // - name: HTTP_PROXY
-                //   value: "http://23.38.59.137:443"
-                // - name: HTTPS_PROXY
-                //   value: "http://23.38.59.137:443"
-                // - name: NO_PROXY
-                //   value: "localhost,127.0.0.1"
+                env:
+                - name: HTTP_PROXY
+                  value: "http://23.38.59.137:443"
+                - name: HTTPS_PROXY
+                  value: "http://23.38.59.137:443"
+                - name: NO_PROXY
+                  value: "localhost,127.0.0.1"
                 volumeMounts:
                 - name: podman-graph-storage
                   mountPath: /var/lib/containers
@@ -102,7 +102,7 @@ pipeline {
             steps {
                 container('snyk') {
                     sh 'ls -l /var/lib/containers/java-application_old_local.tar'
-                    sh 'file /var/lib/containers/java-application_old_local.tar'
+                    // sh 'file /var/lib/containers/java-application_old_local.tar'
                     }
                  }
             }
@@ -114,7 +114,8 @@ pipeline {
                     sh 'whoami'
                     sh 'id'
                     sh 'snyk auth $SNYK_TOKEN -d'  // Authenticate with Snyk
-                    sh 'snyk container test /var/lib/containers/java-application_old_local.tar --debug'  // Scan using image tag
+                    // sh 'snyk container test /var/lib/containers/java-application_old_local.tar --debug'  // Scan using image tag
+                    sh 'snyk container test localhost/daundkarash/java-application_old_local:latest --debug'
                 }
             }
         }
