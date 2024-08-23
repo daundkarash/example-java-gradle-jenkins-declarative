@@ -24,13 +24,13 @@ pipeline {
                 - sleep
                 args:
                 - infinity
-                env:
-                - name: HTTP_PROXY
-                  value: "http://23.38.59.137:443"
-                - name: HTTPS_PROXY
-                  value: "http://23.38.59.137:443"
-                - name: NO_PROXY
-                  value: "localhost,127.0.0.1"
+                // env:
+                // - name: HTTP_PROXY
+                //   value: "http://23.38.59.137:443"
+                // - name: HTTPS_PROXY
+                //   value: "http://23.38.59.137:443"
+                // - name: NO_PROXY
+                //   value: "localhost,127.0.0.1"
                 volumeMounts:
                 - name: podman-graph-storage
                   mountPath: /var/lib/containers
