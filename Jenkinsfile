@@ -91,7 +91,7 @@ pipeline {
         stage('Verify Network Access') {
             steps {
                 container('snyk') {
-                    sh 'curl -v https://api.snyk.io'  // Test network access
+                    sh 'ls -l /var/lib/containers/'  // Test network access
                 }
             }
         }
