@@ -90,6 +90,15 @@ pipeline {
             }
         }
 
+        stage('Fix Permissions') {
+            steps {
+                container('podman') {
+                    sh 'chown jenkins:jenkins /var/lib/containers/java-application_old_local.tar'
+                    sh 'ls -l /var/lib/containers/'
+                    }
+                }
+            }
+
         stage('Snyk Container Scan') {
             steps {
                 container('snyk') {
