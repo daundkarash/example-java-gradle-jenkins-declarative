@@ -90,14 +90,23 @@ pipeline {
             }
         }
 
-        stage('Fix Permissions') {
+        // stage('Fix Permissions') {
+        //     steps {
+        //         container('podman') {
+        //             sh 'chmod 644 /var/lib/containers/java-application_old_local.tar'
+        //             sh 'ls -l /var/lib/containers/'
+        //             }
+        //         }
+        //     }
+        stage('Verify Image Path') {
             steps {
-                container('podman') {
-                    sh 'chmod 644 /var/lib/containers/java-application_old_local.tar'
-                    sh 'ls -l /var/lib/containers/'
+                container('snyk') {
+                    sh 'ls -l /var/lib/containers/java-application_old_local.tar'
+                    sh 'file /var/lib/containers/java-application_old_local.tar'
                     }
-                }
+                 }
             }
+
 
         stage('Snyk Container Scan') {
             steps {
