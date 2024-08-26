@@ -105,9 +105,8 @@ pipeline {
                 container('snyk') {
                     sh 'whoami'
                     sh 'id'
-                    sh 'snyk auth $SNYK_TOKEN'  // Authenticate with Snyk
-                    
-// snyk container test docker-archive:ubi76.tar
+                    sh 'snyk auth $SNYK_TOKEN'  // Authenticate with Snyk 
+                    sh 'snyk container test /var/lib/containers/ubi76.tar'
                     // sh 'snyk container test localhost/daundkarash/java-application_old_local:latest --file=Dockerfile --debug'
                     // sh 'snyk container test /var/lib/containers/java-application_old_local.tar --debug'  // Scan using image tag
                 }
