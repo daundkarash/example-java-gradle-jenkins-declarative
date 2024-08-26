@@ -64,13 +64,13 @@ pipeline {
             }
         }
 
-        // stage('Build') {
-        //     steps {
-        //         sh 'chmod +x ./gradlew'
-        //         sh './gradlew clean build --info'
-        //         sh 'ls -R lib/build/libs'
-        //     }
-        // }
+        stage('Build') {
+            steps {
+                sh 'chmod +x ./gradlew'
+                sh './gradlew clean build --info'
+                sh 'ls -R lib/build/libs'
+            }
+        }
 
         stage('Podman Build') {
             steps {
@@ -96,7 +96,7 @@ pipeline {
         stage('Verify Image') {
             steps {
                 container('podman') {
-                    sh 'podman images 
+                    sh 'podman images'
                     // | grep daundkarash/java-application_old_local'
                 }
             }
