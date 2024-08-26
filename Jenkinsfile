@@ -46,14 +46,7 @@ pipeline {
         SNYK_TOKEN = credentials('snyk-api-token')  // Reference the Jenkins secret
     }
 
-   stages {
-        stage('Install Podman Docker Package') {
-            steps {
-                container('podman') {
-                    sh 'yum install -y podman-docker'
-                }
-            }
-        }
+   
         
     stages {
         stage('Check Podman') {
@@ -64,6 +57,15 @@ pipeline {
             }
         }
 
+       
+        stage('Install Podman Docker Package') {
+            steps {
+                container('podman') {
+                    sh 'yum install -y podman-docker'
+                }
+            }
+        }
+        
         stage('Build') {
             steps {
                 sh 'chmod +x ./gradlew'
@@ -124,5 +126,4 @@ pipeline {
             }
         }
     }
-}
 }
