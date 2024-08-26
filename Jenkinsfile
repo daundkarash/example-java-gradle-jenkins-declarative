@@ -66,35 +66,37 @@ pipeline {
         stage('Podman Build') {
             steps {
                 container('podman') {
-                    sh 'podman build -t daundkarash/java-application_old_local .'
-                    sh 'podman save -o /var/lib/containers/java-application_old_local.tar daundkarash/java-application_old_local'
+                    sh 'podman pull registry.access.redhat.com/ubi7/ubi:7.6'
+                    sh 'podman images'
+                    // sh 'podman build -t daundkarash/java-application_old_local .'
+                    // sh 'podman save -o /var/lib/containers/java-application_old_local.tar daundkarash/java-application_old_local'
                 }
             }
         }
 
-        stage('Load Image') {
-            steps {
-                container('podman') {
-                    sh 'podman load -i /var/lib/containers/java-application_old_local.tar'
-                }
-            }
-        }
+        // stage('Load Image') {
+        //     steps {
+        //         container('podman') {
+        //             sh 'podman load -i /var/lib/containers/java-application_old_local.tar'
+        //         }
+        //     }
+        // }
 
-        stage('Verify Image') {
-            steps {
-                container('podman') {
-                    sh 'podman images | grep daundkarash/java-application_old_local'
-                }
-            }
-        }
+        // stage('Verify Image') {
+        //     steps {
+        //         container('podman') {
+        //             sh 'podman images | grep daundkarash/java-application_old_local'
+        //         }
+        //     }
+        // }
 
-        stage('Verify Network Access') {
-            steps {
-                container('snyk') {
-                    sh 'ls -l /var/lib/containers/'  // Test network access
-                }
-            }
-        }
+        // stage('Verify Network Access') {
+        //     steps {
+        //         container('snyk') {
+        //             sh 'ls -l /var/lib/containers/'  // Test network access
+        //         }
+        //     }
+        // }
 
         stage('Snyk Container Scan') {
             steps {
@@ -102,7 +104,7 @@ pipeline {
                     sh 'whoami'
                     sh 'id'
                     sh 'snyk auth $SNYK_TOKEN'  // Authenticate with Snyk
-                    sh 'snyk container test localhost/daundkarash/java-application_old_local:latest --file=Dockerfile --debug'
+                    // sh 'snyk container test localhost/daundkarash/java-application_old_local:latest --file=Dockerfile --debug'
                     // sh 'snyk container test /var/lib/containers/java-application_old_local.tar --debug'  // Scan using image tag
                 }
             }
