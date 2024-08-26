@@ -44,6 +44,9 @@ pipeline {
             steps {
                 container('podman') {
                     sh 'yum install -y podman-remote podman-docker'
+                    sh 'mkdir -p /run/podman'
+                    sh 'ln -s /run/podman/podman.sock /var/run/docker.sock'
+                    sh 'ls -l /var/run/docker.sock'
                 }
             }
         }
