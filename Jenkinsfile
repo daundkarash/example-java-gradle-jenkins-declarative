@@ -24,13 +24,6 @@ pipeline {
                 - sleep
                 args:
                 - infinity
-                // env:
-                // - name: HTTP_PROXY
-                //   value: "http://23.38.59.137:443"
-                // - name: HTTPS_PROXY
-                //   value: "http://23.38.59.137:443"
-                // - name: NO_PROXY
-                //   value: "localhost,127.0.0.1"
                 volumeMounts:
                 - name: podman-graph-storage
                   mountPath: /var/lib/containers
@@ -46,9 +39,26 @@ pipeline {
         SNYK_TOKEN = credentials('snyk-api-token')  // Reference the Jenkins secret
     }
 
-   
-        
     stages {
+        stage('Install Podman Docker Package') {
+            steps {
+                container('podman') {
+                    sh 'yum install -y podman-docker'
+                }
+            }
+        }
+
+        stage('Start Podman API') {
+            steps {
+                container('podman') {
+                    script {
+                        sh 'podman system service --time=0 unix:///run/podman/podman.sock &'
+                        env.DOCKER_HOST = 'unix:///run/podman/podman.sock'
+                    }
+                }
+            }
+        }
+
         stage('Check Podman') {
             steps {
                 container('podman') {
@@ -57,15 +67,6 @@ pipeline {
             }
         }
 
-       
-        stage('Install Podman Docker Package') {
-            steps {
-                container('podman') {
-                    sh 'yum install -y podman-docker'
-                }
-            }
-        }
-        
         stage('Build') {
             steps {
                 sh 'chmod +x ./gradlew'
@@ -77,10 +78,6 @@ pipeline {
         stage('Podman Build') {
             steps {
                 container('podman') {
-                    // sh 'podman pull registry.access.redhat.com/ubi7/ubi:7.6'
-                    // sh 'podman images'
-                    // sh 'podman save 247ee58855fd -o /var/lib/containers/ubi76.tar'
-                    // sh 'ls -l /var/lib/containers'
                     sh 'podman build -t daundkarash/java-application_old_local .'
                     sh 'podman save -o /var/lib/containers/java-application_old_local.tar daundkarash/java-application_old_local'
                 }
@@ -99,29 +96,18 @@ pipeline {
             steps {
                 container('podman') {
                     sh 'podman images'
-                    // | grep daundkarash/java-application_old_local'
                 }
             }
         }
 
-        // stage('Verify Network Access') {
-        //     steps {
-        //         container('snyk') {
-        //             sh 'ls -l /var/lib/containers/'  // Test network access
-        //         }
-        //     }
-        // }
-
         stage('Snyk Container Scan') {
             steps {
                 container('snyk') {
-                    sh 'whoami'
-                    sh 'id'
+                    script {
+                        env.DOCKER_HOST = 'unix:///run/podman/podman.sock'
+                    }
                     sh 'snyk auth $SNYK_TOKEN'  // Authenticate with Snyk 
-                   
-                    // sh 'snyk container test /var/lib/containers/ubi76.tar --debug'
                     sh 'snyk container test localhost/daundkarash/java-application_old_local:latest --file=Dockerfile --debug'
-                    // sh 'snyk container test /var/lib/containers/java-application_old_local.tar --debug'  // Scan using image tag
                 }
             }
         }
