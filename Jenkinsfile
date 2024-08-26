@@ -44,20 +44,22 @@ pipeline {
             steps {
                 container('podman') {
                     sh 'yum install -y podman-docker'
+                    sh 'ls -l /var/run/docker.sock'
+
                 }
             }
         }
 
-        stage('Start Podman API') {
-            steps {
-                container('podman') {
-                    script {
-                        sh 'podman system service --time=0 unix:///run/podman/podman.sock &'
-                        env.DOCKER_HOST = 'unix:///run/podman/podman.sock'
-                    }
-                }
-            }
-        }
+        // stage('Start Podman API') {
+        //     steps {
+        //         container('podman') {
+        //             script {
+        //                 sh 'podman system service --time=0 unix:///run/podman/podman.sock &'
+        //                 env.DOCKER_HOST = 'unix:///run/podman/podman.sock'
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('Check Podman') {
             steps {
