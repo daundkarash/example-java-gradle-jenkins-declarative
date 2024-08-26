@@ -48,14 +48,24 @@ pipeline {
             }
         }
 
-        stage('Start Podman API Socket') {
+        stage('Start Podman API') {
             steps {
                 container('podman') {
-                    sh 'systemctl enable --now podman.socket'
+                    sh 'nohup podman system service --time=0 unix:///run/podman/podman.sock &'
+                    sleep 5 // Wait a few seconds to ensure the service starts
                     sh 'ln -s /run/podman/podman.sock /var/run/docker.sock'
                 }
             }
         }
+
+        // stage('Start Podman API Socket') {
+        //     steps {
+        //         container('podman') {
+        //             // sh 'systemctl enable --now podman.socket'
+        //             sh 'ln -s /run/podman/podman.sock /var/run/docker.sock'
+        //         }
+        //     }
+        // }
 
         stage('Verify Podman Setup') {
             steps {
