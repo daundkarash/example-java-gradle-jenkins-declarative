@@ -69,7 +69,7 @@ pipeline {
                     sh 'podman pull registry.access.redhat.com/ubi7/ubi:7.6'
                     sh 'podman images'
                     sh 'podman save 247ee58855fd -o ubi76.tar'
-                    sh 'ls -l /var/lib/containers/'
+                    sh 'ls -l /var/lib/containers/storage'
                     // sh 'podman build -t daundkarash/java-application_old_local .'
                     // sh 'podman save -o /var/lib/containers/java-application_old_local.tar daundkarash/java-application_old_local'
                 }
