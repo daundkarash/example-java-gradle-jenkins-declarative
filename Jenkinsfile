@@ -56,19 +56,19 @@ pipeline {
                 container('podman') {
                     sh 'nohup podman system service --time=0 unix:///run/podman/podman.sock &'
                     sleep 5 // Wait a few seconds to ensure the service starts
-                    sh 'ln -s /run/podman/podman.sock /var/run/docker.sock'
+                    // sh 'ln -s /run/podman/podman.sock /var/run/docker.sock'
                 }
             }
         }
 
-        // stage('Start Podman API Socket') {
-        //     steps {
-        //         container('podman') {
-        //             // sh 'systemctl enable --now podman.socket'
-        //             sh 'ln -s /run/podman/podman.sock /var/run/docker.sock'
-        //         }
-        //     }
-        // }
+        stage('Start Podman API Socket') {
+            steps {
+                container('podman') {
+                    // sh 'systemctl enable --now podman.socket'
+                    sh 'ln -s /run/podman/podman.sock /var/run/docker.sock'
+                }
+            }
+        }
 
         stage('Verify Podman Setup') {
             steps {
@@ -79,51 +79,51 @@ pipeline {
             }
         }
 
-        // stage('Build') {
-        //     steps {
-        //         sh 'chmod +x ./gradlew'
-        //         sh './gradlew clean build --info'
-        //         sh 'ls -R lib/build/libs'
-        //     }
-        // }
+        stage('Build') {
+            steps {
+                sh 'chmod +x ./gradlew'
+                sh './gradlew clean build --info'
+                sh 'ls -R lib/build/libs'
+            }
+        }
 
-        // stage('Podman Build') {
-        //     steps {
-        //         container('podman') {
-        //             sh 'podman build -t daundkarash/java-application_old_local .'
-        //             sh 'podman save -o /var/lib/containers/java-application_old_local.tar daundkarash/java-application_old_local'
-        //         }
-        //     }
-        // }
+        stage('Podman Build') {
+            steps {
+                container('podman') {
+                    sh 'podman build -t daundkarash/java-application_old_local .'
+                    sh 'podman save -o /var/lib/containers/java-application_old_local.tar daundkarash/java-application_old_local'
+                }
+            }
+        }
 
-        // stage('Load Image') {
-        //     steps {
-        //         container('podman') {
-        //             sh 'podman load -i /var/lib/containers/java-application_old_local.tar'
-        //         }
-        //     }
-        // }
+        stage('Load Image') {
+            steps {
+                container('podman') {
+                    sh 'podman load -i /var/lib/containers/java-application_old_local.tar'
+                }
+            }
+        }
 
-        // stage('Verify Image') {
-        //     steps {
-        //         container('podman') {
-        //             sh 'podman images'
-        //         }
-        //     }
-        // }
+        stage('Verify Image') {
+            steps {
+                container('podman') {
+                    sh 'podman images'
+                }
+            }
+        }
 
-        // stage('Snyk Container Scan') {
-        //     steps {
-        //         container('snyk') {
-        //             script {
-        //                 env.DOCKER_HOST = 'unix:///run/podman/podman.sock'
-        //             }
-        //             sh 'snyk auth $SNYK_TOKEN'  // Authenticate with Snyk 
-        //             retry(3) {
-        //                 sh 'snyk container test localhost/daundkarash/java-application_old_local:latest --file=Dockerfile --debug'
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Snyk Container Scan') {
+            steps {
+                container('snyk') {
+                    script {
+                        env.DOCKER_HOST = 'unix:///run/podman/podman.sock'
+                    }
+                    sh 'snyk auth $SNYK_TOKEN'  // Authenticate with Snyk 
+                    retry(3) {
+                        sh 'snyk container test localhost/daundkarash/java-application_old_local:latest --file=Dockerfile --debug'
+                    }
+                }
+            }
+        }
     }
 }
