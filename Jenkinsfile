@@ -61,14 +61,14 @@ pipeline {
             }
         }
 
-        stage('Start Podman API Socket') {
-            steps {
-                container('podman') {
-                    // sh 'systemctl enable --now podman.socket'
-                    sh 'ln -s /run/podman/podman.sock /var/run/docker.sock'
-                }
-            }
-        }
+        // stage('Start Podman API Socket') {
+        //     steps {
+        //         container('podman') {
+        //             // sh 'systemctl enable --now podman.socket'
+        //             sh 'ln -s /run/podman/podman.sock /var/run/docker.sock'
+        //         }
+        //     }
+        // }
 
         stage('Verify Podman Setup') {
             steps {
