@@ -22,6 +22,7 @@ pipeline {
                 image: snyk/snyk:alpine
                 command:
                 - sleep
+                retry : 3
                 args:
                 - infinity
                 volumeMounts:
