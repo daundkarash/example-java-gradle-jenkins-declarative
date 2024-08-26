@@ -55,19 +55,21 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            steps {
-                sh 'chmod +x ./gradlew'
-                sh './gradlew clean build --info'
-                sh 'ls -R lib/build/libs'
-            }
-        }
+        // stage('Build') {
+        //     steps {
+        //         sh 'chmod +x ./gradlew'
+        //         sh './gradlew clean build --info'
+        //         sh 'ls -R lib/build/libs'
+        //     }
+        // }
 
         stage('Podman Build') {
             steps {
                 container('podman') {
                     sh 'podman pull registry.access.redhat.com/ubi7/ubi:7.6'
                     sh 'podman images'
+                    sh 'podman save 247ee58855fd -o ubi76.tar'
+                    sh 'ls -l /var/lib/containers/'
                     // sh 'podman build -t daundkarash/java-application_old_local .'
                     // sh 'podman save -o /var/lib/containers/java-application_old_local.tar daundkarash/java-application_old_local'
                 }
@@ -104,6 +106,8 @@ pipeline {
                     sh 'whoami'
                     sh 'id'
                     sh 'snyk auth $SNYK_TOKEN'  // Authenticate with Snyk
+                    
+// snyk container test docker-archive:ubi76.tar
                     // sh 'snyk container test localhost/daundkarash/java-application_old_local:latest --file=Dockerfile --debug'
                     // sh 'snyk container test /var/lib/containers/java-application_old_local.tar --debug'  // Scan using image tag
                 }
