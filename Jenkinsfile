@@ -22,7 +22,6 @@ pipeline {
                 image: snyk/snyk:alpine
                 command:
                 - sleep
-                retry : 3
                 args:
                 - infinity
                 volumeMounts:
@@ -41,24 +40,12 @@ pipeline {
     }
 
     stages {
-        stage('Install Podman Docker Package') {
-            steps {
-                container('podman') {
-                    sh 'yum install -y podman-docker'
-                    sh 'sudo ln -s /run/podman/podman.sock /var/run/docker.sock'
-                    sh 'ls -l /var/run/docker.sock'
-
-                }
-            }
-        }
-
-        // stage('Start Podman API') {
+        // stage('Install Podman Docker Package') {
         //     steps {
         //         container('podman') {
-        //             script {
-        //                 sh 'podman system service --time=0 unix:///run/podman/podman.sock &'
-        //                 env.DOCKER_HOST = 'unix:///run/podman/podman.sock'
-        //             }
+        //             sh 'yum install -y podman-docker'
+        //             sh 'sudo ln -s /run/podman/podman.sock /var/run/docker.sock'
+        //             sh 'ls -l /var/run/docker.sock'
         //         }
         //     }
         // }
@@ -83,12 +70,19 @@ pipeline {
             steps {
                 container('podman') {
                     sh 'podman build -t daundkarash/java-application_old_local .'
+                }
+            }
+        }
+
+        stage('Save Image to Archive') {
+            steps {
+                container('podman') {
                     sh 'podman save -o /var/lib/containers/java-application_old_local.tar daundkarash/java-application_old_local'
                 }
             }
         }
 
-        stage('Load Image') {
+        stage('Load Image from Archive') {
             steps {
                 container('podman') {
                     sh 'podman load -i /var/lib/containers/java-application_old_local.tar'
@@ -107,11 +101,11 @@ pipeline {
         stage('Snyk Container Scan') {
             steps {
                 container('snyk') {
-                    script {
-                        env.DOCKER_HOST = 'unix:///run/podman/podman.sock'
-                    }
+                    // script {
+                    //     env.DOCKER_HOST = 'unix:///run/podman/podman.sock'
+                    // }
                     sh 'snyk auth $SNYK_TOKEN'  // Authenticate with Snyk 
-                    sh 'snyk container test localhost/daundkarash/java-application_old_local:latest --file=Dockerfile --debug'
+                    sh 'snyk container test docker-archive:/var/lib/containers/java-application_old_local.tar --file=Dockerfile --debug'
                 }
             }
         }
